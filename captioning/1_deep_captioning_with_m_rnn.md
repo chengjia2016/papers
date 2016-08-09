@@ -14,3 +14,7 @@ tensorflow
 
 ## 备注
 [Junhua Mao](http://www.stat.ucla.edu/~junhua.mao/)有很多以tf训练的模型，多看看。一系列的image captioning文章。
+
+## 作者
+
+Junhua Mao, Wei Xu & Yi Yang & Jiang Wang & Zhiheng Huang, Alan Yuille

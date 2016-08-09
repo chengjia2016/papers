@@ -10,3 +10,7 @@
 tensorflow
 
 [demo](https://vsubhashini.github.io/s2vt.html)
+
+## 作者
+
+Subhashini Venugopalan

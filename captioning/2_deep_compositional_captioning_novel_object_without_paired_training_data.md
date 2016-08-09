@@ -9,3 +9,7 @@ While recent deep neural network models have achieved promising results on the i
 ## 备注
 
 输入不光有成对出现的图片+文字，还有图片本身的描述，和名词本身的描述，与成对出现的数据一起进行训练。
+
+## 作者
+
+Lisa Anne Hendricks, Subhashini Venugopalan, Marcus Rohrbach, Raymond Mooney, Kate Saenko, Trevor Darrell

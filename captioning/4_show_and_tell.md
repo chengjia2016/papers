@@ -12,3 +12,6 @@ https://github.com/jazzsaxmafia/show_and_tell.tensorflow
 
 tensorflow
 
+# 作者
+
+Oriol Vinyals, Alexander Toshev, Samy Bengio, Dumitru Erhan

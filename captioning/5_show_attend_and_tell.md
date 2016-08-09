@@ -12,3 +12,6 @@ https://github.com/jazzsaxmafia/show_attend_and_tell.tensorflow
 
 tensorflow
 
+## 作者
+
+Kelvin Xu, Jimmy Lei Ba, Ryan Kiros, Kyunghyun Cho, Aaron Courville, Ruslan Salakhutdinov, Richard S. Zemel, Yoshua Bengio

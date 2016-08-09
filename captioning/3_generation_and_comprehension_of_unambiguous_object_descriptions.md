@@ -6,3 +6,6 @@
 
 We propose a method that can generate an unambigu- ous description (known as a referring expression) of a spe- cific object or region in an image, and which can also com- prehend or interpret such an expression to infer which ob- ject is being described. We show that our method outper- forms previous methods that generate descriptions of ob- jects without taking into account other potentially ambigu- ous objects in the scene. Our model is inspired by recent successes of deep learning methods for image captioning, but while image captioning is difficult to evaluate, our task allows for easy objective evaluation. We also present a new large-scale dataset for referring expressions, based on MS- COCO. We have released the dataset and a toolbox for visu- alization and evaluation, see https://github.com/ mjhucla/Google_Refexp_toolbox.
 
+## 作者
+
+Junhua Mao, Jonathan Huang, Alexander Toshev, Oana Camburu, Alan Yuille, Kevin Murphy

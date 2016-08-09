@@ -15,3 +15,8 @@ Torch
 <https://github.com/karpathy/neuraltalk>
 
 python
+
+
+## 作者
+
+Andrej Karpathy, Li Fei-Fei
