@@ -1,5 +1,7 @@
 # Show, Attend and Tell: Neural Image Caption Generation with Visual Attention
 
+## 2016
+
 ## 摘要
 
 受到近期机器翻译和物体检测的启发，本作展示一个基于注意力(attention)的模型用于自动描述图片。本文描述如何使用标准的backpropagation技术和概率上的最大化variational lower bound来以一种确定的方式训练模型。同时通过可视化来展示模型是如何通过观察一个静态的图片来得到相应的描述。在3个数据集上验证本作: Filckr8k, Filckr30k, MSCOCO。
