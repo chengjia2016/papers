@@ -2,6 +2,10 @@
 
 ## CVPR 2016
 
+## 一句话摘要
+
+有Caffe代码, 不光使用成对的图片和句子，同时将图片单词(来自imagenet)和单词的解释(来自wiki)也放入模型进行训练。可以让结果认识成对图片中没有出现过的物体。很有意思的组合，极大的扩展了image captioning的识别范围。DCC主页<https://people.eecs.berkeley.edu/~lisa_anne/dcc_project_page.html>
+
 ## 摘要
 
 目前最新的深度神经网络模型在image captioning领域取得了突飞猛进，他们极大的依赖图片与句子的组成的成对语料库。本作提出了Deep Compositional Captioner(DCC，深度合成解说器)，用于生成新物体（没有出现在成对儿的图片-句子数据集中）的描述。我们的方法是利用了物体识别数据库和外部文字语料库以及语意相似概念上的迁移知识。当前的深度解说器模型只能描述那些在成对儿的图片-文字语料库里包括的物体，尽管他们使用了预先训练好的物体识别模型（比如使用ImageNet）。相反，本作模型可以描述新物体以及与其他物体之间的联系。我们在MSCOCO数据集上证明了描述新物体的能力，以及在ImageNet的图片中描述没有在训练集（图片-文字对）中出现过的物体。更进一步的，我们扩展到了描述视频片段上，结果证明DCC在生成新物体上面比现有的其他图片或视频解说器更好。
@@ -11,6 +15,12 @@ While recent deep neural network models have achieved promising results on the i
 ## 备注
 
 输入不光有成对出现的图片+文字，还有图片本身的描述，和名词本身的描述，与成对出现的数据一起进行训练。
+
+## 代码
+
+<https://github.com/LisaAnne/DCC>
+
+caffe
 
 ## 作者
 
