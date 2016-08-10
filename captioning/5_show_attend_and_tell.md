@@ -8,9 +8,9 @@ Inspired by recent work in machine translation and object detection, we introduc
 
 ## 代码
 
-https://github.com/jazzsaxmafia/show_attend_and_tell.tensorflow
+<https://github.com/jazzsaxmafia/show_attend_and_tell.tensorflow>
 
-tensorflow
+Tensorflow
 
 ## 作者
 

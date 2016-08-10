@@ -8,9 +8,9 @@ In this paper, we present a multimodal Recurrent Neural Network (m-RNN) model fo
 
 ## 代码
 
-https://github.com/mjhucla/TF-mRNN
+<https://github.com/mjhucla/TF-mRNN>
 
-tensorflow
+Tensorflow
 
 ## 备注
 [Junhua Mao](http://www.stat.ucla.edu/~junhua.mao/)有很多以tf训练的模型，多看看。一系列的image captioning文章。

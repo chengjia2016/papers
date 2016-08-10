@@ -8,10 +8,8 @@
 
 <https://github.com/jcjohnson/densecap>
 
-torch
+Torch
 
 ## 作者
 
 Justin Johnson, Andrej Karpathy, Li Fei-Fei
-
-

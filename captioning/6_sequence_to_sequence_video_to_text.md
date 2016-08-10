@@ -7,7 +7,7 @@
 ## 代码
 <https://github.com/jazzsaxmafia/video_to_sequence>
 
-tensorflow
+Tensorflow
 
 [demo](https://vsubhashini.github.io/s2vt.html)
 

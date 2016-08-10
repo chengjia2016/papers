@@ -8,9 +8,9 @@ Automatically describing the content of an image is a fundamental problem in art
 
 # 代码
 
-https://github.com/jazzsaxmafia/show_and_tell.tensorflow
+<https://github.com/jazzsaxmafia/show_and_tell.tensorflow>
 
-tensorflow
+Tensorflow
 
 # 作者
 

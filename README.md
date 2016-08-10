@@ -15,6 +15,10 @@ Some note when reading papers
 
 [6 sequence-to-sequence-video-to-text](https://github.com/wang-yang/papers/blob/master/captioning/6_sequence_to_sequence_video_to_text.md)
 
+[7 deep-visual-semantic-alignments-for-generating-image-descriptions](https://github.com/wang-yang/papers/blob/master/captioning/7_deep_visual_semantic_alignments_for_generating_image_descriptions.md)
+
+[8 densecap](https://github.com/wang-yang/papers/blob/master/captioning/8_densecap_fully_convolutional_localization_networks_for_dense_captioning.md)
+
 ## Image QA
 
 [stacked-attention-networks](https://github.com/wang-yang/papers/blob/master/qa/stacked_attention_networks_for_image_question_answering.md)
