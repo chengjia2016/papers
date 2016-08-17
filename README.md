@@ -1,6 +1,10 @@
 # papers
 Some note when reading papers
 
+## Notes
+
+[1 rnn-turorials](https://github.com/wang-yang/papers/blob/master/notes/1_rnn_tutorials.md)  
+
 ## Image captioning
 
 [0 note](https://github.com/wang-yang/papers/blob/master/captioning/0_note.md)  
