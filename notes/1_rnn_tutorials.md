@@ -1,16 +1,18 @@
-# RNN及LSTM
+# RNN及LSTM零基础教程
 
-## 一 分为几个部分
+## 一 教程分为如下部分
 
 1. 介绍RNN
 2. 用Theano实现RNN
 3. 理解BPTT(BackPropagation Through Time)算法和剃度消失问题
 4. 实现GRU/LSTM RNN
 
-本Tutorial会实现一个基于RNN的语言模型，这个语言模型的第一个用途可以用来计算任意一句话出现在真实世界中的概率。这种模型一般会用于机器翻译系统。  
-第二个用途就是产生新的句子（更酷一些）。比如让RNN模型学习了莎士比亚的写作风格后，就能写出类似莎士比亚的句子。
+本教程会实现一个基于RNN的语言模型，这个语言模型的第一个用途可以用来计算任意一句话出现在真实世界中的概率，这种模型一般会用于机器翻译系统。  
+第二个用途就是产生新的句子（这个更酷一些）。比如让RNN模型学习了莎士比亚的写作风格后，就能写出类似莎士比亚的句子。
 
-## 二 到底啥是RNN?
+就让我们一步一步开学学习吧。
+
+## 二 什么是RNN呢?
 
 RNN主要是利用序列信息。在传统神经网络中的输入是彼此独立的（输出也是）。但这种独立对于很多任务来说是不利的。如果你想预测一个句子中的下一个单词是什么，最好是知道这个单词之前有哪些单词。RNN中的R是recurrent, 是周期性, 反复的意思, 表示会对句子中的每一个单词用相同的方法处理，让输出基于之前的计算结果。理论上RNN可以利用任意长度的句子，但实际中我们只关注最近的几步。一个典型的RNN示意图如下:
 
@@ -19,7 +21,7 @@ RNN主要是利用序列信息。在传统神经网络中的输入是彼此独�
 上图是将左侧的RNN展开成完整的网络。展开的意思就是把需要关注的序列对应的网络写出来。比如对于一个句子，我们只关心5个单词，那么RNN网络就被展开成一个5层的神经网络，每一层对应序列中的一个单词。网络中的一些规则定义如下:
 
 * $x_t$表示在t时刻(step)的输入。比如$x_1$是句子中第二个单词对应的one-hot向量(向量中只有1个1，其余都是0)。
-* $s_t$是t时刻(step)的隐状态，是网络中作为"记忆"的存在。$s_t$是基于前一个隐状态和当前的输入计算出来的: $s_t=f(Ux_t+W{s_{t-1}})$ 。$f()$通常是非线性函数（如tanh, ReLU)。初始隐状态$s_{-1}$用于计算第一个隐状态，通常$s_{-1}$被初始化为全0。
+* $s_t$是t时刻(step)的隐状态，是网络中作为"记忆"的存在。$s_t$是基于前一个隐状态和当前的输入计算出来的: $s_t=f(Ux_t+W{s_{t-1}})$ 。$f()$通常是非线性函数（如$tanh$, $ReLU$)。初始隐状态$s_{-1}$用于计算第一个隐状态，通常$s_{-1}$被初始化为全0。
 * $o_t$是t时刻(step)的输出。比如要预测句子的下一个单词是什么，$o_t$就我们词典中每一个单词出现的概率，$o_t=softmax(Vs_t)$
 
 有些地方需要注意下:
@@ -28,7 +30,7 @@ RNN主要是利用序列信息。在传统神经网络中的输入是彼此独�
 * 不同于传统的深度神经网络（每层拥有不同的参数），RNN在所有层间（又叫step，跟上面的时刻对应)共享参数$(U, V, W)$ 。实际上我们是在各层执行相同的事情，只是输入不同罢了。这就极大的减少了我们需要学习的参数个数。
 * 上面的图中每个step都有输出，但是在实际中不一定每个step都需要输出。比如我们想预测一个句子的感情色彩，我们只关系这个句子的最后输出。同样的，也不是每个step上都需要有输入。RNN的主要特点就在于其隐状态，是用于捕获一些具有顺序特点的信息而已。
 
-## 三 RNN可以做啥
+## 三 RNN可以做什么呢？
 
 很多NLP任务都可以利用RNN。RNN中最常用的是LSTMs，这个比原始RNNs在捕获有长依赖信息时更好用。LSTMs与RNN从本质上相同，只是在计算隐状态时不同而已。下面是一些RNN的应用例子。
 
@@ -58,6 +60,8 @@ RNN主要是利用序列信息。在传统神经网络中的输入是彼此独�
 ## 四 训练RNN
 
 训练RNN与训练传统NN类似。同样使用BP算法, 但有一些小变化。因为网络中各层（time steps）共用相同的参数，因此每层输出的梯度不仅与当前的层有关，还有之前的各层。比如要计算t＝4的梯度，我们需要前面3层的梯度，把他们加起来。这个叫做BPTT`Backpropagation Through Time`。但是原始RNN使用BPTT训练长依赖关系时时效果很不好，因为著名的`消失的剃度`问题。LSTM就是解决这个训练长依赖时的难题被设计出来的。
+
+后面会有训练RNN的具体方法及代码。
 
 ## 五 RNN的扩展
 
@@ -116,6 +120,66 @@ $$
 我们关心什么样的次会是句子的开头或者结尾。为了解决此问题，将SENTENCE_START放置在句子开头，SENTENCE_END放置在句子结尾。这样就可以学到哪些单词最可能是句子的开头。
 
 ### 4 构建训练数据矩阵
+
+RNN的输入是向量，而不是字符串。因此要做一个单词到数字的映射, `index_to_word`和`word_to_index`。比如单词"friendly"映射成2001。训练样本`x`是这样的`[0, 179, 341, 416]`, `0`表示SENTENCE_START。对应的结果`y`是`[179,341,416,1]`。记住我们的目标是预测下一个单词，所以`y`向量就是`x`向量左移一位并在最后加上SENTENCE_END标记。比如179的预测就是341。
+
+```python
+vocabulary_size = 8000
+unknown_token = "UNKNOWN_TOKEN"
+sentence_start_token = "SENTENCE_START"
+sentence_end_token = "SENTENCE_END"
+
+# Read the data and append SENTENCE_START and SENTENCE_END tokens
+print "Reading CSV file..."
+with open('data/reddit-comments-2015-08.csv', 'rb') as f:
+  reader = csv.reader(f, skipinitialspace=True)
+  reader.next()
+  # Split full comments into sentences
+  sentences = itertools.chain(*[nltk.sent_tokenize(x[0].decode('utf-8').lower()) for x in reader])
+  # Append SENTENCE_START and SENTENCE_END
+  sentences = ["%s %s %s" % (sentence_start_token, x, sentence_end_token) for x in sentences]
+print "Parse %d sentences." % (len(sentences))
+
+#Tokenize the sentences into words
+tokenized_sentences = [nltk.word_tokenize(sent) for sent in sentences]
+
+# Count the word frequencies
+word_freq = nltk.FreqDist(itertools.chain(*tokenized_sentences))
+print "Found %d unique words tokens." % len(word_freq.items())
+
+#Get the most common words and build index_to_word and word_to_index vectors
+vocab = word_freq.most_common(vocabulary_size)
+index_to_word = [x[0] for x in vocab]
+index_to_word.append(unknown_token)
+word_to_index = dict([(w,i) for i, w in enumerate(index_to_word)])
+
+print "Using vocabulary size %d." % vocabulary_size
+print "The least frequent word in our vocabulary is '%s' and appeared %d times." % (vocab[-1][0], vocab[-1][1])
+
+# Replace all words not in our vocabulary with the unknown tokens
+for i, sent in enumerate(tokenized_sentences):
+  tokenized_sentences[i] = [w if w in word_to_index else unknown_token for w in sent]
+
+print "\nExample sentence: '%s'" % sentences[0]
+print "\nExample sentence after Pre-processing: '%s'" %s tokenized_sentences[0]
+
+# Create the training data
+X_train = np.asarray([[word_to_index[w] for w in sent[:-1]] for sent in tokenized_sentences])
+y_train = np.asarray([[word_to_index[w] for w in sent[1:]] for sent in tokenized_sentences])
+
+```
+
+训练数据这个样子：
+
+```
+x:
+SENTENCE_START what are n't you understanding about this ? !
+[0, 51, 27, 16, 10, 856, 53, 25, 34, 69]
+
+y:
+what are n't you understanding about this ? ! SENTENCE_END
+[51, 27, 16, 10, 856, 53, 25, 34, 69, 1]
+```
 
 
 
