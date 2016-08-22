@@ -4,7 +4,7 @@
 
 1. 介绍RNN
 2. 用Theano实现RNN
-3. 理解BPTT(BackPropagation Through Time)算法和剃度消失问题
+3. 理解BPTT(BackPropagation Through Time)算法和梯度消失问题
 4. 实现GRU/LSTM RNN
 
 本教程会实现一个基于RNN的语言模型，这个语言模型的第一个用途可以用来计算任意一句话出现在真实世界中的概率，这种模型一般会用于机器翻译系统。  
@@ -59,7 +59,7 @@ RNN主要是利用序列信息。在传统神经网络中的输入是彼此独�
 
 ## 四 训练RNN
 
-训练RNN与训练传统NN类似。同样使用BP算法, 但有一些小变化。因为网络中各层（time steps）共用相同的参数，因此每层输出的梯度不仅与当前的层有关，还有之前的各层。比如要计算t＝4的梯度，我们需要前面3层的梯度，把他们加起来。这个叫做BPTT`Backpropagation Through Time`。但是原始RNN使用BPTT训练长依赖关系时时效果很不好，因为著名的`消失的剃度`问题。LSTM就是解决这个训练长依赖时的难题被设计出来的。
+训练RNN与训练传统NN类似。同样使用BP算法, 但有一些小变化。因为网络中各层（time steps）共用相同的参数，因此每层输出的梯度不仅与当前的层有关，还有之前的各层。比如要计算t＝4的梯度，我们需要前面3层的梯度，把他们加起来。这个叫做BPTT`Backpropagation Through Time`。但是原始RNN使用BPTT训练长依赖关系时时效果很不好，因为著名的`消失的梯度`问题。LSTM就是解决这个训练长依赖时的难题被设计出来的。
 
 后面会有训练RNN的具体方法及代码。
 
@@ -88,7 +88,7 @@ LSTM最近大热。它与RNN并没有本质的区别，仅仅区别于计算隐�
 在本教程里会用RNN实现一个语言模型。加入我们现在有一个句子，里面有m个单词。语言模型就是预测这个句子出现的可能性，定义如下:
 
 $
-P(w_1,...,w_m)=\prod_{i=1}^{m} P(w_i|w_1,...w_{i-1})
+P(w_1,...,w_m)=\displaystyle\prod_{i=1}^{m} P(w_i|w_1,...w_{i-1})
 $
 
 理解为句子出现的概率是组成其的单词在此单词前面单词出现的情况下出现的概率的乘积（好绕）。比如"He want to buy some chocolate"出现的概率是在给定"He want to buy some"的前提下"chocolate"出现的概率，乘以给定"He want to buy"的前提下"some"出现的概率，以此类推直到第一个单词"He"出现的概率。
@@ -131,6 +131,7 @@ sentence_end_token = "SENTENCE_END"
 
 # Read the data and append SENTENCE_START and SENTENCE_END tokens
 print "Reading CSV file..."
+import csv
 with open('data/reddit-comments-2015-08.csv', 'rb') as f:
   reader = csv.reader(f, skipinitialspace=True)
   reader.next()
@@ -252,7 +253,7 @@ def forward_propagation(self, x):
 RNNNumpy.forward_propagation = forward_propagation
 ```
 
-我们不仅返回了计算结果，还有隐状态。后面计算梯度时会用到它们，这里返回可以避免后续重复计算。$o$中每一个元素$o_t$表示一个单词的概率，有时我们只关心概率最高的那个词，比如在评估模型时。**predict** 函数用来做这个
+我们不仅返回了计算结果，还有隐状态。后面计算梯度时会用到它们，这里返回可以避免后续重复计算。$o$中每一个元素$o_t$表示一个单词的概率，有时我们只关心概率最高的那个词，比如在评估模型时。**predict** 函数用来做这个:
 
 ```python
 def predict(self, x):
@@ -263,7 +264,7 @@ def predict(self, x):
 RNNNumpy.predict = predict
 ```
 
-现在尝试下新实现的函数
+尝试下新实现的函数:
 
 ```python
 np.random.seed(10)
@@ -311,16 +312,279 @@ print predictions
 
 ### 3 计算损失函数
 
+模型训练需要明确如何度量error，即损失函数$L$。我们的训练目标就是寻找在给定训练数据集合上，最小化$U,V,W$的损失函数$L$。通常损失函数用`cross-entropy loss`。如果有N个训练数据样本, C个分类(字典大小), 预测值$o$与真实值$y$的**loss**定义为:
+
+$L(y,o) = -\frac{1}{N}\displaystyle\sum_{n \in N}y_nlogo_n$
+
+cross-entropy loss实际上就是把所有训练数据上预测输出和真实值的差累加在一起。loss越大则表示$y$和$o$的差距越大。**calculate_loss** 实现如下:
+
+```python
+def calculate_total_loss(self, x, y):
+  L = 0
+  # For each sentence...
+  for i in op.arange(len(y)):
+    o, s = self.forward_propagation(x[i])
+    # We only care about our prediction of the "correct" words
+    correct_word_predictions = o[np.arange(len(y[i])), y[i]]
+    # Add to the loss based on how off we are
+    L += -1 * np.sum(np.log(correct_word_predictions))
+  return L
+
+def calculate_loss(self, x, y):
+  # Divide the total loss by the number of training examples
+  N = np.sum((len(y_i) for y_i in y))
+  return self.calculate_total_loss(x,y) / N
+
+RNNNumpy.calculate_total_loss = calculate_total_loss
+RNNNumpy.calculate_loss = calculate_loss
+```
+
+思考下对于随机的预测，loss应该是什么，这会给我们一个基准用于评判我们实现的代码是不是正确的。因为我们有C个分类（字典大小），每个词被预测准确的概率就是$1/C$，loss应该是:$L=-\frac{1}{N}Nlog{\frac{1}{C}}=logC$。
+
+```python
+# Limit to 1000 examples to save time
+print "Expected loss for random predictions: %f" % np.log(vocabulary_size)
+print "Actual loss: %f" % model.calculate_loss(X_train[:1000], y_train[:1000])
+```
+
+输出:
+```
+Expected Loss for random predictions: 8.987197
+Actual loss: 8.987440
+```
+
+计算整个数据集上的loss是个很费计算的操作，如果数据集大可能会消耗数个小时。
+
 ### 4 利用SGD和BPTT训练RNN
+
+我们目标是寻找到可以最小化loss的一组参数$U, V, W$。通常的方法是使用SGD。SGD的思想很简单，在观察每一条训练数据后到让参数朝着可以减少error的方向变化。这个方向就是loss对几个参数的梯度: $\frac{\partial{L}}{\partial{U}},\frac{\partial{L}}{\partial{V}},\frac{\partial{L}}{\partial{W}}$。SGD还需要**学习率**，即希望每次朝着梯度的方向变化多少。SGD虽然简单，但是想要优化好SGD却不是容易的事，可以参考[cs231的这篇文章](http://cs231n.github.io/optimization-1/)。我们这里只会实现一个简单的SGD用于理解。
+
+那么到底怎么实现计算梯度呢？在传统神经网络中我们使用Backpropagation算法, 在RNN我们使用其简单变种BPTT。网络中的参数在各个步骤(time steps)共享，每个步骤输出的梯度不仅依赖于当前时间点，还依赖于之前的时间点。更加一般的backpropagation可以参考[Olah的文章](http://colah.github.io/posts/2015-08-Backprop/)和[cs231的文章](http://cs231n.github.io/optimization-2/)。简单的可以吧BPTT理解为黑盒，输入是训练数据(x,y),输出是各个参数的梯度$\frac{\partial{L}}{\partial{U}},\frac{\partial{L}}{\partial{V}},\frac{\partial{L}}{\partial{W}}$
+
+```python
+def bptt(self, x, y):
+  T = len(y)
+  # Perform forward propagation
+  o, s = self.forward_propagation(x)
+  # We accumulate the gradients in these variables
+  dLdU = np.zeros(self.U.shape)
+  dldV = np.zeros(self.V.shape)
+  dldW = np.zeros(self.W.shape)
+  delta_o = o
+  delta_o[np.arange(len(y)),y] -= 1.
+  # For each output backwards...
+  for t in np.arange(T)[::-1]:
+    dldV += np.outer(delta_o[t], s[t].T)
+    # Initial delta calculation
+    delta_t = self.V.T.dot(delta_o[t]) * (1 - (s[t] ** 2))
+    # Backpropagation through time (for at most self.bptt_truncate steps)
+    for bptt_step in np.arange(max(0, t-self.bptt_truncate), t+1)[::-1]:
+      # print "Backpropagation step t=%d bptt setp=%d " % (t, bptt_step)
+      dldW += np.outer(delta_t, s[bptt_step-1])
+      dldU[:, x[bptt_step]] += delta_t
+      # Update delta for next step
+      delta_t = self.W.T.dot(delta_t) * (1 - s[bptt_step-1] ** 2)
+  return [dLdU, dLdV, dLdW]
+
+RNNNumpy.bptt = bptt
+```
 
 ### 5 检查梯度
 
+实现完BPTT后最好再实现下梯度检查，用于检查我们的实现是否正确。梯度检查就是检查下参数的导数是不是等于当前点的斜率，当前点的斜率可以通过微小的改变参数计算出来:
+
+${\displaystyle} \frac{\partial{L}}{\partial{\theta}} \approx {\lim_{h\to0}\frac{J(\theta + h)-J(\theta-h)}{2h}}$
+
+我们比较通过backpropagation计算出来值和上面公式的近似值，如果没有很大差异就对了。近似值需要计算所有参数的total loss, 因此梯度检查非常消耗计算(这里我有有百万级别的参数)。因此最好是现在小数据上测试下。
+
+```python
+def gradient_check(self, x, y, h=0.001, error_threshold=0.01):
+    # Calculate the gradients using backpropagation. We want to checker if these are correct.
+    bptt_gradients = self.bptt(x, y)
+    # List of all parameters we want to check.
+    model_parameters = ['U', 'V', 'W']
+    # Gradient check for each parameter
+    for pidx, pname in enumerate(model_parameters):
+        # Get the actual parameter value from the mode, e.g. model.W
+        parameter = operator.attrgetter(pname)(self)
+        print "Performing gradient check for parameter %s with size %d." % (pname, np.prod(parameter.shape))
+        # Iterate over each element of the parameter matrix, e.g. (0,0), (0,1), ...
+        it = np.nditer(parameter, flags=['multi_index'], op_flags=['readwrite'])
+        while not it.finished:
+            ix = it.multi_index
+            # Save the original value so we can reset it later
+            original_value = parameter[ix]
+            # Estimate the gradient using (f(x+h) - f(x-h))/(2*h)
+            parameter[ix] = original_value + h
+            gradplus = self.calculate_total_loss([x],[y])
+            parameter[ix] = original_value - h
+            gradminus = self.calculate_total_loss([x],[y])
+            estimated_gradient = (gradplus - gradminus)/(2*h)
+            # Reset parameter to original value
+            parameter[ix] = original_value
+            # The gradient for this parameter calculated using backpropagation
+            backprop_gradient = bptt_gradients[pidx][ix]
+            # calculate The relative error: (|x - y|/(|x| + |y|))
+            relative_error = np.abs(backprop_gradient - estimated_gradient)/(np.abs(backprop_gradient) + np.abs(estimated_gradient))
+            # If the error is to large fail the gradient check
+            if relative_error &gt; error_threshold:
+                print "Gradient Check ERROR: parameter=%s ix=%s" % (pname, ix)
+                print "+h Loss: %f" % gradplus
+                print "-h Loss: %f" % gradminus
+                print "Estimated_gradient: %f" % estimated_gradient
+                print "Backpropagation gradient: %f" % backprop_gradient
+                print "Relative Error: %f" % relative_error
+                return
+            it.iternext()
+        print "Gradient check for parameter %s passed." % (pname)
+
+RNNNumpy.gradient_check = gradient_check
+
+# To avoid performing millions of expensive calculations we use a smaller vocabulary size for checking.
+grad_check_vocab_size = 100
+np.random.seed(10)
+model = RNNNumpy(grad_check_vocab_size, 10, bptt_truncate=1000)
+model.gradient_check([0,1,2,3], [1,2,3,4])
+```
+
 ### 6 实现SGD
+
+现在可以实现SGD。分成2步，1 **sgd_step** 计算梯度，然后更新参数。2 外循环遍历所有训练数据，并调整学习率
+
+```python
+# Performs one step of SGD.
+def sdg_step(self, x, y, learning_rate):
+    # Calculate the gradients
+    dLdU, dLdV, dLdW = self.bptt(x, y)
+    # Change parameters according to gradients and learning rate
+    self.U -= learning_rate * dLdU
+    self.V -= learning_rate * dLdV
+    self.W -= learning_rate * dLdW
+
+RNNNumpy.sgd_step = sdg_step
+```
+
+```python
+# Outer SGD Loop
+# - model: The RNN model instance
+# - X_train: The training data set
+# - y_train: The training data labels
+# - learning_rate: Initial learning rate for SGD
+# - nepoch: Number of times to iterate through the complete dataset
+# - evaluate_loss_after: Evaluate the loss after this many epochs
+def train_with_sgd(model, X_train, y_train, learning_rate=0.005, nepoch=100, evaluate_loss_after=5):
+    # We keep track of the losses so we can plot them later
+    losses = []
+    num_examples_seen = 0
+    for epoch in range(nepoch):
+        # Optionally evaluate the loss
+        if (epoch % evaluate_loss_after == 0):
+            loss = model.calculate_loss(X_train, y_train)
+            losses.append((num_examples_seen, loss))
+            time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print "%s: Loss after num_examples_seen=%d epoch=%d: %f" % (time, num_examples_seen, epoch, loss)
+            # Adjust the learning rate if loss increases
+            if (len(losses) > 1 and losses[-1][1] > losses[-2][1]):
+                learning_rate = learning_rate * 0.5
+                print "Setting learning rate to %f" % learning_rate
+            sys.stdout.flush()
+        # For each training example...
+        for i in range(len(y_train)):
+            # One SGD step
+            model.sgd_step(X_train[i], y_train[i], learning_rate)
+            num_examples_seen += 1
+```
+
+完成！让我们亲身体验下训练
+
+```python
+np.random.seed(10)
+model = RNNNumpy(vocabulary_size)
+%timeit model.sgd_step(X_train[10], y_train[10], 0.005)
+```
+
+在我的macbook pro retina 15上，运行一次sgd_step需要76ms。我们训练数据中有80,000条数据，所以一轮迭代需要80000*0.076＝1.68个小时，进行多轮训练需要很多小时。我们还是在很小的数据集上做的实验，那么如果是大公司或者研究室内使用的大数据集咋办？
+
+幸运的是有很多办法可以加速训练，比如优化代码，修改模型，使用hierachical softmax, 增加projection层避免大的矩阵乘法。我们这里尝试使用GPU来加速下。在此之前，先在超小数据集上看看实现是否正确。
+
+```python
+np.random.seed(10)
+# Train on a small subset of the data to see what happens
+model = RNNNumpy(vocabulary_size)
+losses = train_with_sgd(model, X_train[:100], y_train[:100], nepoch=10, evaluate_loss_after=1)
+```
+
+输出:
+```
+2016-08-22 14:46:26: Loss after num_examples_seen=0 epoch=0: 8.987425
+2016-08-22 14:46:35: Loss after num_examples_seen=100 epoch=1: 8.976270
+2016-08-22 14:46:44: Loss after num_examples_seen=200 epoch=2: 8.960212
+2016-08-22 14:46:53: Loss after num_examples_seen=300 epoch=3: 8.930430
+2016-08-22 14:47:02: Loss after num_examples_seen=400 epoch=4: 8.862264
+2016-08-22 14:47:12: Loss after num_examples_seen=500 epoch=5: 6.913570
+2016-08-22 14:47:21: Loss after num_examples_seen=600 epoch=6: 6.302493
+2016-08-22 14:47:30: Loss after num_examples_seen=700 epoch=7: 6.014995
+2016-08-22 14:47:39: Loss after num_examples_seen=800 epoch=8: 5.833877
+2016-08-22 14:47:48: Loss after num_examples_seen=900 epoch=9: 5.710718
+```
+
+看着loss在下降，说明代码实现是对的。
 
 ## 九 利用Theano和GPU训练
 
+将所有numpy计算的地方改成Theano的实现, 定义了**RNNTheano**。瞬间得到加速。用Theano的cpu模式会比numpy的版本块，用Theano的gpu模式会更快。这样的加速很有用，可以让训练时间从1个星期缩减到1天左右。
+
+为了避免长时间的训练，我提供了一个训练好的模型用于体验，隐层使用50个维度，词典是8000。训练50轮，用了约20小时。loss还可以再降，训练更久可以得到更好的结果。用下面的函数加载模型:
+
+```python
+from utils import load_model_parameters_theano, save_model_parameters_theano
+
+model = RNNTheano(vocabulary_size, hidden_dim=50)
+# losses = train_with_sgd(model, X_train, y_train, nepoch=50)
+# save_model_parameters_theano('./data/trained-model-theano.npz', model)
+load_model_parameters_theano('./data/trained-model-theano.npz', model)
+```
+
 ## 十 生成文本
 
+现在已经有了模型，写个helper函数通过模型生成句子吧:
+
+```python
+def generate_sentence(model):
+    # We start the sentence with the start token
+    new_sentence = [word_to_index[sentence_start_token]]
+    # Repeat until we get an end token
+    while not new_sentence[-1] == word_to_index[sentence_end_token]:
+        next_word_probs = model.forward_propagation(new_sentence)
+        sampled_word = word_to_index[unknown_token]
+        # We don't want to sample unknown words
+        while sampled_word == word_to_index[unknown_token]:
+            samples = np.random.multinomial(1, next_word_probs[-1])
+            sampled_word = np.argmax(samples)
+        new_sentence.append(sampled_word)
+    sentence_str = [index_to_word[x] for x in new_sentence[1:-1]]
+    return sentence_str
+
+num_sentences = 10
+senten_min_length = 7
+
+for i in range(num_sentences):
+    sent = []
+    # We want long sentences, not sentences with one or two words
+    while len(sent) &lt; senten_min_length:
+        sent = generate_sentence(model)
+    print " ".join(sent)
+```
+
+这些是生成的句子（挑选了一些比较好的）:
+* Anyway, to the city scene you’re an idiot teenager.
+* What ? ! ! ! ! ignore!
+* Screw fitness, you’re saying: https
+* Thanks for the advice to keep my thoughts around girls.
+* Yep, please disappear with the terrible generation.
+
+看这些生成的句子，模型可以学到使用语法，可以使用标点符号。  
+但是更多的句子是没有意义的，而且有语法错误。原因之一是我们训练的时间不够长，或者用的训练数据不够多。但是更主要的原因是，原生的RNN不能产生有意义的文字是因为它不能够学到单词间较长距离的依赖关系。这就是RNN再被发明出来后没有被普遍使用的原因，理论上很好，但是实践不佳。LSTM解决了这个问题，让我们继续往下看。
 
 
 
