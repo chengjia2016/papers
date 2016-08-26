@@ -4,8 +4,8 @@ Some note when reading papers
 ## Notes
 
 [1 rnn-turorials](https://github.com/wang-yang/papers/blob/master/notes/1_rnn_tutorials.md)  
-[2 2_origin_rnn](https://github.com/wang-yang/papers/blob/master/notes/2_origin_rnn.md)  
-[3 lstm_gru](https://github.com/wang-yang/papers/blob/master/notes/3_lstm_gru.md)  
+[2 origin-rnn](https://github.com/wang-yang/papers/blob/master/notes/2_origin_rnn.md)  
+[3 lstm-gru](https://github.com/wang-yang/papers/blob/master/notes/3_lstm_gru.md)  
 [4 char-rnn-numpy](https://github.com/wang-yang/papers/blob/master/notes/4_more_rnn.md)  
 
 ## Image captioning
