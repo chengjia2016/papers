@@ -43,25 +43,25 @@ def step(self, x):
   y = np.dot(self.W_hy, self.h)
 ```
 
-前向更新公式:
+前向更新公式:  
 
-$h_t = tanh(W_{hh}h_{t-1} + W_{xh}x_t)$
-$y = W_{hy}h$
+$h_t = tanh(W_{hh}h_{t-1} + W_{xh}x_t)$  
+$y = W_{hy}h$  
 
-$tanh$激活函数把值限制在[-1,1]之间
-RNN有三个参数$W_{hh}, W_{xh}, W_{hy}$
-`np.dot`是矩阵乘法
+$tanh$激活函数把值限制在[-1,1]之间  
+RNN有三个参数$W_{hh}, W_{xh}, W_{hy}$  
+`np.dot`是矩阵乘法  
 
-跟`2_origin_rnn.md`中的前向公式对比下, 基本一致。
+跟`2_origin_rnn.md`中的前向公式对比下, 基本一致。  
 
-$s_t = tanh(Ux_t+Ws_{t-1})$
-$o_t = softmax(Vs_t)$
+$s_t = tanh(Ux_t+Ws_{t-1})$  
+$o_t = softmax(Vs_t)$  
 
-也是三个参数，对应关系如下:
+也是三个参数，对应关系如下:  
 
-$W_{xh} - U$ 是把输入 $x$ 转换成 $h$ 空间的矩阵
-$W_{hh} - W$ 是把前一时刻的隐状态 $h$ 转到到当前状态的矩阵
-$W_{hy} - V$ 是从隐状态空间转换到输出空间的矩阵
+$W_{xh} - U$ 是把输入 $x$ 转换成 $h$ 空间的矩阵  
+$W_{hh} - W$ 是把前一时刻的隐状态 $h$ 转到到当前状态的矩阵  
+$W_{hy} - V$ 是从隐状态空间转换到输出空间的矩阵  
 
 ### 加深一点
 
@@ -132,7 +132,8 @@ https://gist.github.com/wang-yang/31e673e4792954305a311fc2356de452)，在原版�
 1. 初始化xs, hs, ys, ps
 2. 前向过程, 从0开始到seq_length次的展开
 
-先看完整代码
+先看完整代码  
+
 ```python
 xs[t] = np.zeros((vocab_size,1))
 xs[t][inputs[t]] = 1
@@ -143,14 +144,15 @@ loss += -np.log(ps[t][targets[t],0])
 ```
 
 利用one-hot的形式(1-of-k形式)初始化进入网络的输入:
+
 ```python
 xs[t] = np.zeros((vocab_size,1))
 xs[t][inputs[t]] = 1
 ```
 
-这两个公式的实现:
-计算隐状态: $h_t = tanh(W_{hh}h_{t-1} + W_{xh}x_t)$
-**unnormalized** log probabilities for next char: $y = W_{hy}h$
+这两个公式的实现:  
+计算隐状态: $h_t = tanh(W_{hh}h_{t-1} + W_{xh}x_t)$  
+**unnormalized** log probabilities for next char: $y = W_{hy}h$  
 
 ```python
 hs[t] = np.tanh(np.dot(Wxh, xs[t]) + np.dot(Whh, hs[t-1]) + bh)
@@ -216,5 +218,5 @@ dy = np.copy(ps[t])
 
 
 ## 参考
-[1] http://karpathy.github.io/2015/05/21/rnn-effectiveness/
-[2] http://cs231n.github.io/neural-networks-case-study/#grad
+[1] http://karpathy.github.io/2015/05/21/rnn-effectiveness/  
+[2] http://cs231n.github.io/neural-networks-case-study/#grad  
