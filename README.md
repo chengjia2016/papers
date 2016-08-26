@@ -7,6 +7,7 @@ Some note when reading papers
 [2 origin-rnn](https://github.com/wang-yang/papers/blob/master/notes/2_origin_rnn.md)  
 [3 lstm-gru](https://github.com/wang-yang/papers/blob/master/notes/3_lstm_gru.md)  
 [4 char-rnn-numpy](https://github.com/wang-yang/papers/blob/master/notes/4_more_rnn.md)  
+[5 neuraltalk-compile](https://github.com/wang-yang/papers/blob/master/notes/5_neuraltalk_compile.md)  
 
 ## Image captioning
 
