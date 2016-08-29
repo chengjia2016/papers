@@ -155,7 +155,7 @@ luarocks make hdf5-0-0.rockspec
 
 ### 本地用cpu版本, 因为本地显卡gpu显存太小了, 即使装了gpu版本需要的依赖也白搭
 
-涉及到cutorch, cunn, cudnn, loadcaffe组建(GPU上安装时再说)
+涉及到cutorch, cunn, cudnn组建(GPU上安装时再说)
 
 ## 在本地执行evaluation脚本
 
