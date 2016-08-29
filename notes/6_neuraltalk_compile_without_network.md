@@ -5,6 +5,8 @@
 
 **注: 内网环境具备了yum和pip, 主要是luarocks的安装需要手动**
 
+<!-- more -->
+
 ## 从本地拷贝torch和neuraltalk2到IDC机器
 
 torch.tgz  
@@ -244,4 +246,96 @@ luarocks make nngraph-scm-1.rockspec
 python prepro.py --input_json coco/coco_raw.json --num_val 5000 --num_test 5000 --images_root coco/images --word_count_threshold 5 --output_json coco/cocotalk.json --output_h5 coco/cocotalk.h5
 ```
 
+生成: `cocotalk.h5`, 23G。
+
 ## 训练
+
+为了让训练中可以打印BLEU/METEOR/CIDEr分数, 需要把  
+`https://github.com/tylin/coco-caption` 放到coco-caption目录
+
+并加上参数 `-language_eval 1`
+
+运行:  
+`th train.lua -input_h5 coco/cocotalk.h5 -input_json coco/cocotalk.json -language_eval 1`
+
+在默认训练参数下, 在COCO数据集上的1个epoch是7500次迭代，在非精调(fine tuning)下1轮迭代是1小时左右。loss在2.7附近, CIDEr在0.4附近。在70000次迭代时CIDEr达到0.6, loss在2.5左右。最终CIDEr会在0.7左右。
+然后停止训练, 打开精调开关, `-finetune_cnn_after 0` ，使用`-start_from`指定上一阶段的模型继续训练, 在2天后, CIDEr会达到0.9附近。
+
+默认使用的是gpu 0号, 其忽略了bashrc中的`export CUDA_VISIBLE_DEVICE=2,3`
+
+使用nvidia_smi查看时, 确实占用了0号gpu
+
+```
+Mon Aug 29 17:48:50 2016
++------------------------------------------------------+
+| NVIDIA-SMI 352.79     Driver Version: 352.79         |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Tesla K80           On   | 0000:05:00.0     Off |                    0 |
+| N/A   72C    P0   145W / 149W |   3007MiB / 11519MiB |     99%      Default |
++-------------------------------+----------------------+----------------------+
+|   1  Tesla K80           On   | 0000:06:00.0     Off |                    0 |
+| N/A   38C    P0    74W / 149W |    470MiB / 11519MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+|   2  Tesla K80           On   | 0000:85:00.0     Off |                    0 |
+| N/A   50C    P0    60W / 149W |    163MiB / 11519MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+|   3  Tesla K80           On   | 0000:86:00.0     Off |                    0 |
+| N/A   38C    P0    73W / 149W |    163MiB / 11519MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID  Type  Process name                               Usage      |
+|=============================================================================|
++-----------------------------------------------------------------------------+
+```
+
+### 若训练时出错:
+
+原因:`RuntimeError: could not open display`
+
+具体
+
+```
+image 99416: steps earphones flows emirates kitchenware separate pork gripping diaper concentrates stethoscope brown lifts grouped steve allowed
+image 132773: seen efficient refrigerator fan daughter less progress unused foilage boarders feast orchids curtain clothe wrapped reclining
+evaluating validation performance... 3200/3200 (9.179654)
+Traceback (most recent call last):
+  File "myeval.py", line 6, in <module>
+    from pycocotools.coco import COCO
+  File "/root/neuraltalk2/coco-caption/pycocotools/coco.py", line 48, in <module>
+    import matplotlib.pyplot as plt
+  File "/usr/lib64/python2.7/site-packages/matplotlib/pyplot.py", line 97, in <module>
+    _backend_mod, new_figure_manager, draw_if_interactive, _show = pylab_setup()
+  File "/usr/lib64/python2.7/site-packages/matplotlib/backends/__init__.py", line 25, in pylab_setup
+    globals(),locals(),[backend_name])
+  File "/usr/lib64/python2.7/site-packages/matplotlib/backends/backend_gtkagg.py", line 10, in <module>
+    from matplotlib.backends.backend_gtk import gtk, FigureManagerGTK, FigureCanvasGTK,\
+  File "/usr/lib64/python2.7/site-packages/matplotlib/backends/backend_gtk.py", line 13, in <module>
+    import gtk; gdk = gtk.gdk
+  File "/usr/lib64/python2.7/site-packages/gtk-2.0/gtk/__init__.py", line 64, in <module>
+    _init()
+  File "/usr/lib64/python2.7/site-packages/gtk-2.0/gtk/__init__.py", line 52, in _init
+    _gtk.init_check()
+RuntimeError: could not open display
+/root/torch/install/bin/luajit: ./misc/utils.lua:17: attempt to index local 'file' (a nil value)
+stack traceback:
+        ./misc/utils.lua:17: in function 'read_json'
+        ./misc/net_utils.lua:202: in function 'language_eval'
+        train.lua:218: in function 'eval_split'
+        train.lua:305: in main chunk
+        [C]: in function 'dofile'
+        /root/torch/install/lib/luarocks/rocks/trepl/scm-1/bin/th:145: in main chunk
+        [C]: at 0x004064f0
+```
+
+**解决办法:**
+
+修改`coco-caption/pycocotools/coco.py`, 把`#import matplotlib.pyplot as plt`注释掉, 把`plt`相关的也注释掉。因为IDC服务器是没有display的。
+
+### train.lua的更多参数
+
+TODO
