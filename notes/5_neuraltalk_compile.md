@@ -89,10 +89,11 @@ luarocks install nngraph
 luarocks install image
 ```
 
-这三个其实已经跟着Torch一起装好了, 确认当前luarocks装了什么:
+~~这三个其实已经跟着Torch一起装好了~~, 确认当前luarocks装了什么:
 
 `luarocks list`
 
+**这三个需要手动安装，自带版本不行, 分别运行luarocks make xxxx**
 
 运行`luarocks list`时如果遇到:
 
