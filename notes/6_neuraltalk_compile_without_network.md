@@ -336,6 +336,82 @@ stack traceback:
 
 修改`coco-caption/pycocotools/coco.py`, 把`#import matplotlib.pyplot as plt`注释掉, 把`plt`相关的也注释掉。因为IDC服务器是没有display的。
 
+### 精调模型
+
+```
+th train.lua -input_h5 coco/cocotalk.h5 -input_json coco/cocotalk.json -language_eval 1 -gpuid 2 -finetune_cnn_after 0 -start_from checkpoint/model_id.t7 -checkpoint_path checkpoint > log 2>&1 &
+```
+
 ### train.lua的更多参数
 
-TODO
+#### 输入设置
+- -input_h5: 默认 coco/data.h5, 训练数据
+- -input_json: coco/data.json, 训练数据元数据
+- --cnn_proto: model/VGG_ILSVRC_16_layers_deploy.prototxt, Caffe格式的CNN模型prototxt, 现在只能是VGGNet-16
+- --cnn_model: model/VGG_ILSVRC_16_layers.caffemodel, Caffe格式的CNN模型
+- -start_from: "", 用于指定checkpoint模型, 用于继续训练, eg. checkpoint/model_id.t7
+
+#### 模型设置
+- -rnn_size: 默认512, 用于指定RNN神经元个数
+- -input_encoding_size: 512, 词语和图像编码后的大小
+
+#### 优化: 通用
+- -max_iters: 默认-1, 最大迭代轮数, -1表示无穷
+- -batch_size: 16, 每个batch有多少张图片, batch对应句子个数就是batch_size*此图对应的句子个数
+- -grad_clip: 0.1, 梯度截断阈值(一般小于5, 因梯度已经归一化过)
+- -drop_prob_lm: 0.5, RNN语言模型dropout强度
+- finetune_cnn_after: -1, -1表示不启动精调, 0表示0轮迭代立即启动精调
+- seq_per_img: 5, 限制训练中每个图片生成句子的个数, 因为CNN前向计算很费时
+
+#### 优化: RNN语言模型
+- -optim: 默认adam, update方法, 可选rmsprop|sgd|sgdmon|adagrad|adam
+- -learning_rate: 4e-4, 学习率
+- -learning_rate_decay_start: -1， -1不衰减, 从哪次迭代开始衰减学习率
+- -learning_rate_decay_every: 50000, 间隔多少迭代折半衰减学习率
+- -optim_alpha: 0.8, alpha参数, 针对adagrad/rmsprop/momentum/adam
+- -optim_beta: 0.999, beta参数, 针对adam
+- -optim_epsilon: 1e-8, epsilon用于平滑时的分母
+
+#### 优化: CNN模型
+- -cnn_optim: 默认adam, CNN的优化方法
+- -cnn_optim_alpha: 0.8, alpha for mementum
+- -cnn_optim_beta: 0.999, beta for momentum
+- -cnn_learning_rate: 1e-5
+- -cnn_weight_decay: 0, L2衰减参数
+
+#### 评估/保存
+- -val_images_use: 默认3200, 周期的进行评估计算loss时用多少图片, -1是用所有
+- -save_checkpoint_every: 2500, 多少迭代去存一个checkpoint
+- -checkpoint_path: "", 保存checkpoint的路径, 空是当前目录
+- -language_eval: 0, 是否进行language evaluation, 1=yes, 0=no, BLEU/CIDEr/METEOR/ROUGE_L, 需要coco-caption的代码
+- -losses_log_every: 25, 多少轮去算一下losses, 用于决定是否dump
+
+#### 其他
+- -backend: cudnn, nn|cudnn
+- -id: "", 用于标记本轮训练的id, 用于cross-val, 和用于dump文件
+- -seed: 123, 随机数种子
+- -gpuid: 0, 用哪个gpu, -1是用CPU
+
+## 训练结果
+
+目前训练还在进行中, 最新的Evaluation分数是:
+
+```
+validation loss:        2.4419743700307
+{
+  Bleu_1 : 0.642
+  ROUGE_L : 0.473
+  METEOR : 0.208
+  Bleu_4 : 0.22
+  Bleu_3 : 0.317
+  Bleu_2 : 0.46
+  CIDEr : 0.695
+}
+```
+
+## 后续
+
+* 了解Image Caption的几个评估指标意义
+* 详解代码
+* 构建训练数据, 用自有训练数据进行训练
+* 把neuraltalks2制作成docker image, 便于后续使用
