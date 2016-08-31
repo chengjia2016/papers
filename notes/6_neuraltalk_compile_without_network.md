@@ -3,7 +3,7 @@
 公司的机房里面是不能联网的, 这就需要把所有依赖都下载下来手动安装所有依赖。  
 这里记录下在其搭建过程，以备查阅。
 
-**注: 内网环境具备了yum和pip, 主要是luarocks的安装需要手动**
+**注: 内网环境具备了yum和pip(需要配置), 主要是luarocks的安装需要手动**
 
 <!-- more -->
 
@@ -80,7 +80,7 @@ luarocks make lua-cjson-2.1.0-1.rockspec
 
 依赖protobuf
 ```
-yum install protobuf-compiler protobuf
+yum install protobuf-compiler protobuf-devel protobuf
 ```
 
 ```
@@ -152,7 +152,7 @@ th eval.lua -model model/model_id1-501-1448236541.t7 -image_folder images/ -num_
 
 现在需要替换成
 ```
-d cudnn-7.5-linux-x64-v5.0-ga/cuda/lib64
+cd cudnn-7.5-linux-x64-v5.0-ga/cuda/lib64
 lrwxrwxrwx 1 13 Apr 23 10:52 libcudnn.so -> libcudnn.so.5
 lrwxrwxrwx 1 17 Apr 23 10:52 libcudnn.so.5 -> libcudnn.so.5.0.5
 -rwxrwxr-x 1 59909104 Apr 23 08:15 libcudnn.so.5.0.5
