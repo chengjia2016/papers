@@ -3,11 +3,18 @@ Some note when reading papers
 
 ## Notes
 
+[Updated in my blog](wangyang.online/blog)  
+
 [1 rnn-turorials](https://github.com/wang-yang/papers/blob/master/notes/1_rnn_tutorials.md)  
 [2 origin-rnn](https://github.com/wang-yang/papers/blob/master/notes/2_origin_rnn.md)  
 [3 lstm-gru](https://github.com/wang-yang/papers/blob/master/notes/3_lstm_gru.md)  
 [4 char-rnn-numpy](https://github.com/wang-yang/papers/blob/master/notes/4_more_rnn.md)  
 [5 neuraltalk-compile](https://github.com/wang-yang/papers/blob/master/notes/5_neuraltalk_compile.md)  
+[6 neuraltalk-no-network](https://github.com/wang-yang/papers/blob/master/notes/6_neuraltalk_compile_without_network.md)  
+[7 neuraltalk-docker](https://github.com/wang-yang/papers/blob/master/notes/7_docker_neuraltalks2.md)  
+[8 image-caption-eval](https://github.com/wang-yang/papers/blob/master/notes/8_image_caption_eval.md)  
+[9 neuraltalks2-code](https://github.com/wang-yang/papers/blob/master/notes/9_neuraltalks2_code.md)  
+[10 neuraltalks2-web](https://github.com/wang-yang/papers/blob/master/notes/10_neuraltalks_web.md)  
 
 ## Image captioning
 
