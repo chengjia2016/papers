@@ -121,6 +121,9 @@ luarocks make lua-cjson-2.1.0-1.rockspec
 
 ### 安装loadcaffe:
 
+依赖于protobuf, 参考在ubuntu下的依赖:
+`sudo apt-get install libprotobuf-dev protobuf-compiler`
+
 ```
 cd /Users/willwywang-NB/github/neuraltalk2/offline_rocks/loadcaffe-master
 luarocks make loadcaffe-1.0-0.rockspec
