@@ -28,3 +28,44 @@ python
 ## 作者
 
 Andrej Karpathy, Li Fei-Fei
+
+
+## 模型
+
+输入是图片和文字描述。
+第一步通过模型，把句子片段和图片区域正确的关联起来  
+(present a model that aligns sentence snippets to the visual regions that they describe through a multimodal embedding)  
+
+第二步是把上一步的结果作为训练数据，喂给RNN模型，用于生成句子片段
+(then treat these correspondences as training data for a second, multimodal Recurrent Neural Network model that learns to generate the snippets)
+
+### 把特定的图片区域和文字片段对应起来
+
+人写出来的句子，经常会涉及到图片中的位置。
+![](7_pic_text_align.png)
+我们需要能够推断出这些隐含的位置与文字的对应关系。  
+只有学到了这种关系，才能根据图片的区域生成文字片段。  
+
+#### 表示图片
+
+使用RCNN  
+CNN基于ImageNet训练  
+然后基于ImageNet Detection Challenge的200分类精调
+使用前19个检测到的区域，外加整幅图片用于计算表示此图的向量  
+
+$
+v=W_m[CNN_{\theta_{c}}(I_b)]+b_m
+$
+
+$\theta_c$是CNN的参数, 6千万量级
+$I_b$是图片bounding box内的像素  
+$CNN_{\theta_{c}}(I_b)$是将bounding box转换成4096维的激活向量
+$W_m$的维度是$h*4096$, $h$是multimodal embedding space的大小, 约1000到1600
+
+这个公式是把图片转换成了一系列h维的向量$\{v_i|i=1...20\}$
+
+#### 表示文字
+
+为了建立夸模型的关系，我们要让句子中的词语，与图片区域使用相同的$h$空间表示。
+
+基于BRNN
