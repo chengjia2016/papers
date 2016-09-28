@@ -25,3 +25,5 @@ caffe
 ## 作者
 
 Lisa Anne Hendricks, Subhashini Venugopalan, Marcus Rohrbach, Raymond Mooney, Kate Saenko, Trevor Darrell
+
+## 结合已有的图片描述, 和caption
